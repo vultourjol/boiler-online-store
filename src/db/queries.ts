@@ -98,34 +98,29 @@ function productSpecMatchesSpecs(p: (typeof mockProducts)[number], filters: Prod
 
 export async function getPowerBounds() {
   const powers = mockProducts.map((p) => p.power);
-  return {
-    min: Math.min(...powers),
-    max: Math.floor(Math.max(...powers) / 10) * 10 + 10,
-  };
+  const min = Math.min(...powers);
+  const max = Math.max(Math.ceil(Math.max(...powers) / 10) * 10 + 10, min + 10);
+  return { min, max };
 }
 
 export async function getHeatingAreaBounds() {
   const values = mockProducts
     .map((p) => parseFirstNumber(p.specs?.heatingArea))
     .filter((v): v is number => v !== null);
-  return values.length > 0
-    ? {
-        min: Math.min(...values),
-        max: Math.floor(Math.max(...values) / 100) * 100 + 100,
-      }
-    : { min: 0, max: 100 };
+  if (values.length === 0) return { min: 0, max: 100 };
+  const min = Math.min(...values);
+  const max = Math.max(Math.ceil(Math.max(...values) / 100) * 100 + 100, min + 100);
+  return { min, max };
 }
 
 export async function getHopperCapacityBounds() {
   const values = mockProducts
     .map((p) => parseFirstNumber(p.specs?.hopperCapacity))
     .filter((v): v is number => v !== null);
-  return values.length > 0
-    ? {
-        min: Math.min(...values),
-        max: Math.floor(Math.max(...values) / 100) * 100 + 100,
-      }
-    : { min: 0, max: 100 };
+  if (values.length === 0) return { min: 0, max: 100 };
+  const min = Math.min(...values);
+  const max = Math.max(Math.ceil(Math.max(...values) / 100) * 100 + 100, min + 100);
+  return { min, max };
 }
 
 export async function getSmokeDiameters() {
@@ -199,13 +194,14 @@ export async function getBrands() {
 
 export async function getPriceBounds() {
   const padPriceMax = (value: number) =>
-    Math.floor(value / 250000) * 250000 + 250000;
+    Math.ceil(value / 250000) * 250000 + 250000;
 
   if (!hasDatabase || !db) {
     const prices = mockProducts.map((p) => p.price);
+    const min = Math.floor(Math.min(...prices) / 1000) * 1000;
     return {
-      min: Math.floor(Math.min(...prices) / 1000) * 1000,
-      max: padPriceMax(Math.max(...prices)),
+      min,
+      max: Math.max(padPriceMax(Math.max(...prices)), min + 100000),
     };
   }
   const rows = await db
@@ -214,9 +210,11 @@ export async function getPriceBounds() {
       max: sql<number>`max(${products.price})`,
     })
     .from(products);
+  const min = Math.floor((rows[0]?.min ?? 0) / 1000) * 1000;
+  const max = Math.max(padPriceMax(rows[0]?.max ?? 500000), min + 100000);
   return {
-    min: Math.floor((rows[0]?.min ?? 0) / 1000) * 1000,
-    max: padPriceMax(rows[0]?.max ?? 500000),
+    min,
+    max,
   };
 }
 

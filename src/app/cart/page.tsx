@@ -2,25 +2,55 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useMemo, useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { formatPower, formatPrice } from "@/lib/format";
+import { formatPhone, isValidPhone } from "@/lib/phone";
+
+export const dynamic = "force-dynamic";
 
 export default function CartPage() {
+  return (
+    <Suspense fallback={null}>
+      <CartReservationForm />
+    </Suspense>
+  );
+}
+
+function CartReservationForm() {
   const { items, removeItem, setQuantity, totalPrice, clear, isHydrated } = useCart();
+  const searchParams = useSearchParams();
+  const reserveMode = searchParams.get("mode") === "reserve";
   const [form, setForm] = useState({ name: "", phone: "", address: "", comment: "" });
+  const [delivery, setDelivery] = useState("delivery");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [orderId, setOrderId] = useState<number | null>(null);
+  const [isReserve, setIsReserve] = useState(false);
 
-  const deliveryFee = useMemo(() => (totalPrice > 150000 || totalPrice === 0 ? 0 : 4900), [totalPrice]);
+  const deliveryFee = useMemo(() => {
+    if (delivery === "pickup") return 0;
+    if (delivery === "tk") return 9900;
+    return totalPrice > 150000 || totalPrice === 0 ? 0 : 4900;
+  }, [delivery, totalPrice]);
   const grandTotal = totalPrice + deliveryFee;
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: { preventDefault: () => void }, reserve = false) {
     e.preventDefault();
     if (!form.name.trim() || !form.phone.trim()) {
       setStatus("error");
       setErrorMsg("Укажите имя и телефон");
+      return;
+    }
+    if (!isValidPhone(form.phone)) {
+      setStatus("error");
+      setErrorMsg("Телефон должен быть в формате +7-999-999-99-99");
+      return;
+    }
+    if (delivery !== "pickup" && !form.address.trim()) {
+      setStatus("error");
+      setErrorMsg("Укажите адрес доставки");
       return;
     }
     setStatus("submitting");
@@ -31,6 +61,8 @@ export default function CartPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
+          type: reserve ? "reserve" : "order",
+          delivery,
           items: items.map((i) => ({
             productId: i.productId,
             name: i.name,
@@ -44,6 +76,7 @@ export default function CartPage() {
         throw new Error(data.error ?? "Ошибка оформления заказа");
       }
       setOrderId(data.orderId);
+      setIsReserve(reserve);
       setStatus("success");
       clear();
     } catch (err) {
@@ -57,11 +90,12 @@ export default function CartPage() {
       <main className="mx-auto flex min-h-[60vh] max-w-2xl flex-col items-center justify-center px-5 py-24 text-center">
         <span className="text-5xl">✓</span>
         <h1 className="mt-6 font-display text-3xl font-semibold text-graphite-950">
-          Заказ №{orderId} принят
+          {isReserve ? `Резерв №${orderId} оформлен` : `Заказ №${orderId} принят`}
         </h1>
         <p className="mt-3 text-graphite-600">
-          Спасибо за заказ! Наш менеджер свяжется с вами в течение 15 минут для
-          подтверждения деталей доставки и монтажа.
+          {isReserve
+            ? "Товар зарезервирован за вами. Наш менеджер свяжется с вами в течение 15 минут для подтверждения резерва."
+            : "Спасибо за заказ! Наш менеджер свяжется с вами в течение 15 минут для подтверждения деталей доставки и монтажа."}
         </p>
         <Link
           href="/catalog"
@@ -177,6 +211,56 @@ export default function CartPage() {
                   <span>{formatPrice(grandTotal)}</span>
                 </div>
 
+                <div className="mt-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-graphite-500">
+                    Способ доставки
+                  </h3>
+                  <div className="mt-3 flex flex-col gap-2">
+                    {[
+                      { value: "delivery", label: "Курьером", hint: "По городу" },
+                      { value: "tk", label: "Транспортная компания", hint: "По России" },
+                      { value: "pickup", label: "Самовывоз", hint: "Бесплатно" },
+                    ].map((option) => {
+                      const fee =
+                        option.value === "pickup"
+                          ? 0
+                          : option.value === "tk"
+                          ? 9900
+                          : totalPrice > 150000 || totalPrice === 0
+                          ? 0
+                          : 4900;
+                      return (
+                        <label
+                          key={option.value}
+                          className={`flex cursor-pointer items-center justify-between gap-2 border px-3 py-2.5 text-sm transition-colors ${
+                            delivery === option.value
+                              ? "border-brand-red-700 bg-brand-red-700/5"
+                              : "border-graphite-700/20 hover:border-graphite-700/40"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="delivery"
+                              value={option.value}
+                              checked={delivery === option.value}
+                              onChange={() => setDelivery(option.value)}
+                              className="h-4 w-4 accent-[#8b0000]"
+                            />
+                            <span>
+                              {option.label}{" "}
+                              <span className="ml-1 text-xs text-graphite-400">{option.hint}</span>
+                            </span>
+                          </span>
+                          <span className="text-xs text-graphite-500">
+                            {fee === 0 ? "Бесплатно" : formatPrice(fee)}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3">
                   <input
                     required
@@ -187,17 +271,22 @@ export default function CartPage() {
                   />
                   <input
                     required
-                    placeholder="Телефон"
+                    inputMode="tel"
+                    placeholder="+7-999-999-99-99"
                     value={form.phone}
-                    onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    maxLength={18}
+                    onChange={(e) => setForm({ ...form, phone: formatPhone(e.target.value) })}
                     className="border border-graphite-700/20 px-3 py-3 text-sm outline-none focus:border-brand-red-700"
                   />
-                  <input
-                    placeholder="Адрес доставки"
-                    value={form.address}
-                    onChange={(e) => setForm({ ...form, address: e.target.value })}
-                    className="border border-graphite-700/20 px-3 py-3 text-sm outline-none focus:border-brand-red-700"
-                  />
+                  {delivery !== "pickup" && (
+                    <input
+                      required
+                      placeholder="Адрес доставки"
+                      value={form.address}
+                      onChange={(e) => setForm({ ...form, address: e.target.value })}
+                      className="border border-graphite-700/20 px-3 py-3 text-sm outline-none focus:border-brand-red-700"
+                    />
+                  )}
                   <textarea
                     placeholder="Комментарий к заказу"
                     value={form.comment}
@@ -210,13 +299,31 @@ export default function CartPage() {
                     <p className="text-sm text-brand-red-700">{errorMsg}</p>
                   )}
 
-                  <button
-                    type="submit"
-                    disabled={status === "submitting"}
-                    className="mt-2 bg-brand-red-800 py-4 text-sm font-medium uppercase tracking-[0.1em] text-white transition-colors hover:bg-brand-red-700 disabled:opacity-60"
-                  >
-                    {status === "submitting" ? "Оформляем..." : "Оформить заказ"}
-                  </button>
+                  <div className="mt-2 flex flex-col gap-2">
+                    <button
+                      type="submit"
+                      disabled={status === "submitting"}
+                      className={`py-4 text-sm font-medium uppercase tracking-[0.1em] transition-colors disabled:opacity-60 ${
+                        reserveMode
+                          ? "border border-graphite-700/30 text-graphite-600 hover:border-graphite-700/50"
+                          : "bg-brand-red-800 text-white hover:bg-brand-red-700"
+                      }`}
+                    >
+                      {status === "submitting" ? "Оформляем..." : "Оформить заказ"}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={status === "submitting"}
+                      onClick={(e) => handleSubmit(e, true)}
+                      className={`py-4 text-sm font-medium uppercase tracking-[0.1em] transition-colors disabled:opacity-60 ${
+                        reserveMode
+                          ? "bg-brand-red-800 text-white hover:bg-brand-red-700"
+                          : "border border-graphite-700/30 text-graphite-950 hover:border-brand-red-800 hover:text-brand-red-800"
+                      }`}
+                    >
+                      {status === "submitting" ? "Резервируем..." : "Забронировать"}
+                    </button>
+                  </div>
                   <p className="text-center text-xs text-graphite-400">
                     Нажимая кнопку, вы соглашаетесь с политикой обработки данных
                   </p>

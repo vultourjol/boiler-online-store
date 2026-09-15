@@ -6,6 +6,7 @@ import type { TechnicalSpecs } from "@/lib/types";
 import { AddToCartButton } from "@/components/AddToCartButton";
 import { ProductGallery } from "@/components/ProductGallery";
 import { ProductCard } from "@/components/ProductCard";
+import { ReserveButton } from "@/components/ReserveButton";
 
 export const dynamic = "force-dynamic";
 
@@ -159,7 +160,10 @@ export default async function ProductPage({
                 {product.inStock ? "В наличии" : "Под заказ, 2–4 недели"}
               </div>
             </div>
-            <AddToCartButton product={product} className="px-10 py-4 text-base" />
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <AddToCartButton product={product} className="px-10 py-4 text-base" />
+              <ReserveButton product={product} className="px-10 py-4 text-base" />
+            </div>
           </div>
         </div>
       </section>

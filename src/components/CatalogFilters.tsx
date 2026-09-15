@@ -13,8 +13,10 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function readRange(searchParams: URLSearchParams, keyMin: string, keyMax: string, bounds: Bounds): Range {
-  const from = Number(searchParams.get(keyMin));
-  const to = Number(searchParams.get(keyMax));
+  const rawFrom = searchParams.get(keyMin);
+  const rawTo = searchParams.get(keyMax);
+  const from = rawFrom !== null && rawFrom !== "" ? Number(rawFrom) : NaN;
+  const to = rawTo !== null && rawTo !== "" ? Number(rawTo) : NaN;
   return {
     from: Number.isFinite(from) ? clamp(from, bounds.min, bounds.max) : bounds.min,
     to: Number.isFinite(to) ? clamp(to, bounds.min, bounds.max) : bounds.max,
@@ -389,7 +391,7 @@ function RangeSlider({
           max={bounds.max}
           step={1}
           value={value.from}
-          onChange={(e) => onChange({ from: clamp(Number(e.target.value), bounds.min, value.to), to: value.to })}
+          onChange={(e) => onChange({ from: clamp(Number(e.target.value), bounds.min, value.to - 1), to: value.to })}
           onPointerUp={onCommit}
           onKeyUp={onCommit}
           className="dual-range absolute inset-0 z-10 h-full w-full"
@@ -401,7 +403,7 @@ function RangeSlider({
           max={bounds.max}
           step={1}
           value={value.to}
-          onChange={(e) => onChange({ from: value.from, to: clamp(Number(e.target.value), value.from, bounds.max) })}
+          onChange={(e) => onChange({ from: value.from, to: clamp(Number(e.target.value), value.from + 1, bounds.max) })}
           onPointerUp={onCommit}
           onKeyUp={onCommit}
           className="dual-range absolute inset-0 h-full w-full"

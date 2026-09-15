@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/cart-context";
+import type { BrandCountryGroup } from "@/db/queries";
 
 const NAV_LINKS = [
   { href: "/", label: "Главная" },
@@ -12,10 +13,28 @@ const NAV_LINKS = [
   { href: "/#contacts", label: "Контакты" },
 ];
 
-export function Header() {
+export function Header({ brandGroups }: { brandGroups: BrandCountryGroup[] }) {
   const { totalCount, isHydrated } = useCart();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const catalogRef = useRef<HTMLDivElement>(null);
+  const isCatalogPage = pathname.startsWith("/catalog");
+
+  useEffect(() => {
+    if (!catalogOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (catalogRef.current && !catalogRef.current.contains(e.target as Node)) {
+        setCatalogOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [catalogOpen]);
+
+  useEffect(() => {
+    setCatalogOpen(false);
+  }, [pathname]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-graphite-700/60 bg-graphite-950/95 backdrop-blur">
@@ -35,17 +54,96 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 lg:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`text-sm uppercase tracking-[0.12em] transition-colors hover:text-brand-red-600 ${
-                pathname === link.href ? "text-brand-red-600" : "text-graphite-100"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            if (link.href === "/catalog") {
+              return (
+                <div
+                  key={link.href}
+                  ref={catalogRef}
+                  className="relative"
+                  onMouseEnter={() => {
+                    if (!isCatalogPage) setCatalogOpen(true);
+                  }}
+                  onClick={() => {
+                    if (!isCatalogPage) setCatalogOpen(true);
+                  }}
+                >
+                  <Link
+                    href={link.href}
+                    onClick={(e) => {
+                      if (!isCatalogPage) e.preventDefault();
+                    }}
+                    className={`text-sm uppercase tracking-[0.12em] transition-colors hover:text-brand-red-600 ${
+                      pathname.startsWith("/catalog") ? "text-brand-red-600" : "text-graphite-100"
+                    }`}
+                  >
+                    Каталог
+                  </Link>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`absolute -right-5 top-1/2 hidden h-4 w-4 -translate-y-1/2 text-graphite-400 transition-transform duration-200 ${
+                      catalogOpen ? "rotate-180" : ""
+                    } xl:block`}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+
+                  {catalogOpen && (
+                    <div className="absolute left-1/2 top-full z-50 mt-4 w-[540px] -translate-x-full bg-white p-6 shadow-xl shadow-graphite-950/20">
+                      <div className="mb-4 flex items-center justify-between border-b border-graphite-100 pb-3">
+                        <span className="text-xs font-semibold uppercase tracking-[0.1em] text-graphite-500">
+                          Бренды котлов
+                        </span>
+                        <Link
+                          href="/catalog"
+                          className="text-xs uppercase tracking-[0.1em] text-brand-red-700 hover:text-brand-red-800"
+                        >
+                          Весь каталог →
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-3 gap-x-6">
+                        {brandGroups.map((group) => (
+                          <div key={group.country} className="mb-4">
+                            <div className="mb-1.5 text-[11px] uppercase tracking-[0.08em] text-graphite-400">
+                              {group.country}
+                            </div>
+                            <div className="flex flex-col">
+                              {group.brands.map((brand) => (
+                                <Link
+                                  key={brand}
+                                  href={`/catalog?brand=${encodeURIComponent(brand)}`}
+                                  className="py-1 text-sm text-graphite-700 transition-colors hover:text-brand-red-700"
+                                >
+                                  {brand}
+                                </Link>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`text-sm uppercase tracking-[0.12em] transition-colors hover:text-brand-red-600 ${
+                  pathname === link.href ? "text-brand-red-600" : "text-graphite-100"
+                }`}
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-4">

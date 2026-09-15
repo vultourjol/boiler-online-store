@@ -5,6 +5,7 @@ import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CartProvider } from "@/lib/cart-context";
+import { getBrandsByCountry } from "@/db/queries";
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin", "cyrillic"],
@@ -24,12 +25,14 @@ export const metadata: Metadata = {
     "Интернет-магазин отопительных котлов премиум-класса: газовые, твердотопливные, электрические, дизельные, пеллетные и комбинированные модели с доставкой и монтажом.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const brandGroups = await getBrandsByCountry();
+
   return (
     <html lang="ru" data-scroll-behavior="smooth" className={`${cormorant.variable} ${manrope.variable}`}>
       <body className="flex min-h-screen flex-col bg-[#f6f5f3] text-graphite-950 antialiased">
         <CartProvider>
-          <Header />
+          <Header brandGroups={brandGroups} />
           <div className="flex-1">{children}</div>
           <Footer />
         </CartProvider>
