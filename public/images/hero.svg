@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1f26"/>
+      <stop offset="1" stop-color="#2b3340"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#g)"/>
+  <circle cx="1360" cy="180" r="220" fill="#e2a13c" opacity="0.9"/>
+  <circle cx="1360" cy="180" r="150" fill="#39434d"/>
+  <rect x="1240" y="150" width="240" height="300" rx="20" fill="#232a31"/>
+  <rect x="1262" y="178" width="196" height="60" rx="10" fill="#2f3a45"/>
+  <circle cx="1290" cy="208" r="8" fill="#e5484d"/>
+  <rect x="1315" y="192" width="80" height="8" rx="4" fill="#6b7784"/>
+  <rect x="1315" y="210" width="120" height="8" rx="4" fill="#6b7784"/>
+  <rect x="1262" y="268" width="196" height="90" rx="10" fill="#2f3a45"/>
+  <circle cx="1310" cy="313" r="14" fill="#3f8c5a"/>
+  <path d="M1302 322 l8 8 l16-18" stroke="#dceadf" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="1262" y="388" width="196" height="44" rx="10" fill="#2f3a45"/>
+  <rect x="1292" y="404" width="120" height="10" rx="5" fill="#6b7784"/>
+  <path d="M0 900 L1600 640 V900Z" fill="#0d1117"/>
+  <text x="90" y="820" font-family="serif" font-size="40" fill="#8b8f98">Отопительные котлы премиум-класса</text>
+</svg>

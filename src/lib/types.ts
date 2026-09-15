@@ -1,0 +1,45 @@
+export type TechnicalSpecs = {
+  boilerType: string;
+  series: string;
+  heatingArea: string;
+  heatingType: string;
+  fuelLoading: string;
+  autoFuel: string;
+  manualFuel: string;
+  autoIgnition: string;
+  lambdaProbe: string;
+  ashRemoval: string;
+  hopperCapacity: string;
+  hopperType: string;
+  circuitType: string;
+  heatExchanger: string;
+  autoCleanHeatExchanger: string;
+  burner: string;
+  gsmModule: string;
+  smokeDiameter: string;
+};
+
+export type ProductListItem = {
+  id: number;
+  categoryId: number;
+  name: string;
+  slug: string;
+  brand: string;
+  country: string;
+  fuelType: string;
+  power: number;
+  efficiencyPercent: number;
+  price: number;
+  oldPrice: number | null;
+  warrantyYears: number;
+  imageUrl: string;
+  galleryImages?: string[];
+  description: string;
+  features: string[];
+  inStock: boolean;
+  isFeatured: boolean;
+  rating: number;
+  categorySlug: string;
+  categoryName: string;
+  specs?: TechnicalSpecs;
+};
