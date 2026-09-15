@@ -9,8 +9,15 @@ import type { BrandCountryGroup } from "@/db/queries";
 const NAV_LINKS = [
   { href: "/", label: "Главная" },
   { href: "/catalog", label: "Каталог" },
+  { href: "#", label: "Монтаж" },
   { href: "/#advantages", label: "Преимущества" },
   { href: "/#contacts", label: "Контакты" },
+];
+
+const MONTAGE_ITEMS = [
+  { label: "Монтаж отопления" },
+  { label: "Монтаж водоснабжения" },
+  { label: "Модульные котельные" },
 ];
 
 export function Header({ brandGroups }: { brandGroups: BrandCountryGroup[] }) {
@@ -18,7 +25,9 @@ export function Header({ brandGroups }: { brandGroups: BrandCountryGroup[] }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [catalogOpen, setCatalogOpen] = useState(false);
+  const [montazhOpen, setMontazhOpen] = useState(false);
   const catalogRef = useRef<HTMLDivElement>(null);
+  const montazhRef = useRef<HTMLDivElement>(null);
   const isCatalogPage = pathname.startsWith("/catalog");
 
   useEffect(() => {
@@ -33,7 +42,19 @@ export function Header({ brandGroups }: { brandGroups: BrandCountryGroup[] }) {
   }, [catalogOpen]);
 
   useEffect(() => {
+    if (!montazhOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (montazhRef.current && !montazhRef.current.contains(e.target as Node)) {
+        setMontazhOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [montazhOpen]);
+
+  useEffect(() => {
     setCatalogOpen(false);
+    setMontazhOpen(false);
   }, [pathname]);
 
   return (
@@ -55,6 +76,62 @@ export function Header({ brandGroups }: { brandGroups: BrandCountryGroup[] }) {
 
         <nav className="hidden items-center gap-8 lg:flex">
           {NAV_LINKS.map((link) => {
+            if (link.label === "Монтаж") {
+              return (
+                <div
+                  key={link.label}
+                  ref={montazhRef}
+                  className="relative"
+                  onMouseEnter={() => setMontazhOpen(true)}
+                  onClick={() => setMontazhOpen(true)}
+                >
+                  <button
+                    type="button"
+                    className={`text-sm uppercase tracking-[0.12em] transition-colors hover:text-brand-red-600 ${
+                      montazhOpen ? "text-brand-red-600" : "text-graphite-100"
+                    }`}
+                  >
+                    Монтаж
+                  </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    className={`absolute -right-5 top-1/2 hidden h-4 w-4 -translate-y-1/2 text-graphite-400 transition-transform duration-200 ${
+                      montazhOpen ? "rotate-180" : ""
+                    } xl:block`}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+
+                  {montazhOpen && (
+                    <div className="absolute left-1/2 top-full z-50 mt-4 w-72 -translate-x-1/2 bg-white p-6 shadow-xl shadow-graphite-950/20">
+                      <div className="mb-3 border-b border-graphite-100 pb-3">
+                        <span className="text-xs font-semibold uppercase tracking-[0.1em] text-graphite-500">
+                          Услуги монтажа
+                        </span>
+                      </div>
+                      <div className="flex flex-col">
+                        {MONTAGE_ITEMS.map((item) => (
+                          <button
+                            key={item.label}
+                            type="button"
+                            onClick={() => setMontazhOpen(false)}
+                            className="rounded-sm px-2 py-2 text-left text-sm text-graphite-700 transition-colors hover:bg-graphite-100 hover:text-brand-red-700"
+                          >
+                            {item.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            }
             if (link.href === "/catalog") {
               return (
                 <div
@@ -192,16 +269,38 @@ export function Header({ brandGroups }: { brandGroups: BrandCountryGroup[] }) {
 
       {menuOpen && (
         <nav className="flex flex-col border-t border-graphite-700/60 bg-graphite-950 px-5 py-4 lg:hidden">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMenuOpen(false)}
-              className="py-2 text-sm uppercase tracking-[0.12em] text-graphite-100 hover:text-brand-red-600"
-            >
-              {link.label}
-            </Link>
-          ))}
+          {NAV_LINKS.map((link) => {
+            if (link.label === "Монтаж") {
+              return (
+                <div key={link.label} className="flex flex-col gap-1 py-2">
+                  <span className="text-sm uppercase tracking-[0.12em] text-graphite-100">
+                    Монтаж
+                  </span>
+                  <div className="flex flex-col border-l border-graphite-700/60 pl-3">
+                    {MONTAGE_ITEMS.map((item) => (
+                      <span
+                        key={item.label}
+                        onClick={() => setMenuOpen(false)}
+                        className="py-1 text-sm text-graphite-400"
+                      >
+                        {item.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMenuOpen(false)}
+                className="py-2 text-sm uppercase tracking-[0.12em] text-graphite-100 hover:text-brand-red-600"
+              >
+                {link.label}
+              </Link>
+            );
+          })}
         </nav>
       )}
     </header>

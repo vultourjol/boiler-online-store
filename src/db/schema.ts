@@ -49,6 +49,7 @@ export const orders = pgTable("orders", {
   comment: text("comment").notNull().default(""),
   total: integer("total").notNull(),
   status: text("status").notNull().default("new"),
+  paymentMethod: text("payment_method").notNull().default("card_online"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

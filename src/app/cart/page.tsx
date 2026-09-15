@@ -24,6 +24,7 @@ function CartReservationForm() {
   const reserveMode = searchParams.get("mode") === "reserve";
   const [form, setForm] = useState({ name: "", phone: "", address: "", comment: "" });
   const [delivery, setDelivery] = useState("delivery");
+  const [payment, setPayment] = useState("card_online");
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [orderId, setOrderId] = useState<number | null>(null);
@@ -63,6 +64,7 @@ function CartReservationForm() {
           ...form,
           type: reserve ? "reserve" : "order",
           delivery,
+          payment,
           items: items.map((i) => ({
             productId: i.productId,
             name: i.name,
@@ -258,6 +260,44 @@ function CartReservationForm() {
                         </label>
                       );
                     })}
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.1em] text-graphite-500">
+                    Способ оплаты
+                  </h3>
+                  <div className="mt-3 flex flex-col gap-2">
+                    {[
+                      { value: "card_online", label: "Оплата картой онлайн", hint: "Банковской картой" },
+                      { value: "cash", label: "При получении", hint: "Наличными или картой" },
+                      { value: "invoice", label: "Счёт для юр. лиц", hint: "Безналичный расчёт" },
+                      { value: "credit", label: "Рассрочка", hint: "0% · Без переплат" },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className={`flex cursor-pointer items-center justify-between gap-2 border px-3 py-2.5 text-sm transition-colors ${
+                          payment === option.value
+                            ? "border-brand-red-700 bg-brand-red-700/5"
+                            : "border-graphite-700/20 hover:border-graphite-700/40"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="radio"
+                            name="payment"
+                            value={option.value}
+                            checked={payment === option.value}
+                            onChange={() => setPayment(option.value)}
+                            className="h-4 w-4 accent-[#8b0000]"
+                          />
+                          <span>
+                            {option.label}{" "}
+                            <span className="ml-1 text-xs text-graphite-400">{option.hint}</span>
+                          </span>
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 </div>
 

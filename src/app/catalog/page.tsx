@@ -13,6 +13,7 @@ import {
   type ProductFilters,
 } from "@/db/queries";
 import { CatalogFilters } from "@/components/CatalogFilters";
+import { PowerSeriesPanel } from "@/components/PowerSeriesPanel";
 import { ProductCard } from "@/components/ProductCard";
 import { SortSelect } from "@/components/SortSelect";
 
@@ -142,6 +143,10 @@ export default async function CatalogPage({
           )}
         </div>
       </div>
+
+      <section className="mx-auto max-w-7xl px-5 pb-12 sm:px-8">
+        <PowerSeriesPanel products={productList} />
+      </section>
     </main>
   );
 }

@@ -3,8 +3,15 @@ import Link from "next/link";
 import type { ProductListItem } from "@/lib/types";
 import { formatPower, formatPrice } from "@/lib/format";
 import { AddToCartButton } from "./AddToCartButton";
+import { CompareButton } from "./CompareButton";
 
-export function ProductCard({ product }: { product: ProductListItem }) {
+export function ProductCard({
+  product,
+  priority = false,
+}: {
+  product: ProductListItem;
+  priority?: boolean;
+}) {
   const discount =
     product.oldPrice && product.oldPrice > product.price
       ? Math.round(100 - (product.price / product.oldPrice) * 100)
@@ -17,6 +24,7 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           src={product.imageUrl}
           alt={product.name}
           fill
+          priority={priority}
           sizes="(max-width: 768px) 100vw, 320px"
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
@@ -84,8 +92,9 @@ export function ProductCard({ product }: { product: ProductListItem }) {
           </div>
         </div>
 
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col gap-2">
           <AddToCartButton product={product} fullWidth />
+          <CompareButton product={product} fullWidth />
         </div>
       </div>
     </div>

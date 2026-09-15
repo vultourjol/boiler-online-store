@@ -4,7 +4,9 @@ import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { CompareBar } from "@/components/CompareBar";
 import { CartProvider } from "@/lib/cart-context";
+import { CompareProvider } from "@/lib/compare-context";
 import { getBrandsByCountry } from "@/db/queries";
 
 const cormorant = Cormorant_Garamond({
@@ -31,11 +33,14 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
   return (
     <html lang="ru" data-scroll-behavior="smooth" className={`${cormorant.variable} ${manrope.variable}`}>
       <body className="flex min-h-screen flex-col bg-[#f6f5f3] text-graphite-950 antialiased">
-        <CartProvider>
-          <Header brandGroups={brandGroups} />
-          <div className="flex-1">{children}</div>
-          <Footer />
-        </CartProvider>
+        <CompareProvider>
+          <CartProvider>
+            <Header brandGroups={brandGroups} />
+            <div className="flex-1">{children}</div>
+            <Footer />
+            <CompareBar />
+          </CartProvider>
+        </CompareProvider>
       </body>
     </html>
   );

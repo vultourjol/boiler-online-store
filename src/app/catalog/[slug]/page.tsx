@@ -4,7 +4,9 @@ import { getProductBySlug, getRelatedProducts } from "@/db/queries";
 import { formatPower, formatPrice } from "@/lib/format";
 import type { TechnicalSpecs } from "@/lib/types";
 import { AddToCartButton } from "@/components/AddToCartButton";
+import { CompareButton } from "@/components/CompareButton";
 import { ProductGallery } from "@/components/ProductGallery";
+import { ReviewsSection } from "@/components/ReviewsSection";
 import { ProductCard } from "@/components/ProductCard";
 import { ReserveButton } from "@/components/ReserveButton";
 
@@ -71,6 +73,7 @@ export default async function ProductPage({
             alt={product.name}
             discount={discount}
           />
+          <ReviewsSection product={product} />
         </div>
 
         <div>
@@ -163,6 +166,7 @@ export default async function ProductPage({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <AddToCartButton product={product} className="px-10 py-4 text-base" />
               <ReserveButton product={product} className="px-10 py-4 text-base" />
+              <CompareButton product={product} className="px-10 py-4 text-base" />
             </div>
           </div>
         </div>

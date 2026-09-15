@@ -12,13 +12,14 @@ type IncomingItem = {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, phone, address, comment, items, type } = body as {
+    const { name, phone, address, comment, items, type, payment } = body as {
       name?: string;
       phone?: string;
       address?: string;
       comment?: string;
       items?: IncomingItem[];
       type?: string;
+      payment?: string;
     };
 
     if (!name || !phone || !items || items.length === 0) {
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest) {
         comment: `${isReserve ? "Бронь: " : ""}${comment ?? ""}`,
         total,
         status: isReserve ? "reserve" : "new",
+        paymentMethod: payment ?? "card_online",
       })
       .returning();
 

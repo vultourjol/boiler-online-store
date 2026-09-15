@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { getCategories, getFeaturedProducts } from "@/db/queries";
 import { ProductCard } from "@/components/ProductCard";
+import { BoilerWizard } from "@/components/BoilerWizard";
 
 export const dynamic = "force-dynamic";
 
@@ -130,8 +131,8 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {featured.map((product, i) => (
+              <ProductCard key={product.id} product={product} priority={i === 0} />
             ))}
           </div>
         </div>
@@ -215,6 +216,8 @@ export default async function HomePage() {
           </a>
         </div>
       </section>
+
+      <BoilerWizard />
     </main>
   );
 }
